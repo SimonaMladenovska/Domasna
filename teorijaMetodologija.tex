@@ -45,3 +45,24 @@ $f(x,y)=\iint \limits_{-\infty}^{\infty}F(u,v)e^{i2\pi(ux+vy)}dudv$
 f(x,y)=\sum_{m=-\infty}^{\infty}\sum_{n=-\infty}^{\infty}F(m,n)\cdot e^{i2\pi(xmu_0+ynv_0)}
 \end{equation}
 \end{document}
+
+
+*Python za filtriranje na slika*
+import cv2
+import numpy as np
+import matplotlib.pyplot as plot
+from PIL import Image, ImageOps
+%matplotlib inline
+
+slika = cv2.imread('ice.jpg',0)
+plot.imshow(img)
+
+f = np.fft.fft2(slika)
+fshift = np.fft.fftshift(f)
+magnitude_spectrum = 20*np.log(np.abs(fshift))
+
+plot.subplot(121),plot.imshow(slika, cmap = 'gray')
+plot.title('Vnesena fotografija'), plot.xticks([]), plot.yticks([])
+plot.subplot(122),plot.imshow(magnitude_spectrum, cmap = 'gray')
+plot.title('Dobiena'), plot.xticks([]), plot.yticks([])
+plot.show()
