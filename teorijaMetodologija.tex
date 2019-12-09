@@ -47,7 +47,7 @@ f(x,y)=\sum_{m=-\infty}^{\infty}\sum_{n=-\infty}^{\infty}F(m,n)\cdot e^{i2\pi(xm
 \end{document}
 
 
-*Python za filtriranje na slika*
+--Python za filtriranje na slika
 import cv2
 import numpy as np
 import matplotlib.pyplot as plot
@@ -66,3 +66,17 @@ plot.title('Vnesena fotografija'), plot.xticks([]), plot.yticks([])
 plot.subplot(122),plot.imshow(magnitude_spectrum, cmap = 'gray')
 plot.title('Dobiena'), plot.xticks([]), plot.yticks([])
 plot.show()
+
+--So matlab koga sakame da manipulirame so slika
+clear all
+close all
+
+a=imread('C:\Users\mlade\Desktop\ice.jpg');
+whos a
+g=fspecial('gaussian',960,10);
+max(g(:))
+g1=mat2gray(g);
+max(g1(:))
+af=fftshift(fft2(a));
+ag1=af.*g1;
+fftshow(ag1)
