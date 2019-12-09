@@ -1,0 +1,47 @@
+
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{esint}
+\begin{document}
+\title{ТЕОРИЈА:}
+За да филтрираме слика во фреквенциски домен потребно е да ја помножиме
+сликата во фреквенциски домен со филтерот (кернел) кој е исто така во
+фреквенциски домен.
+\begin{equation}
+I_{f,filt}=HI_f
+\end{equation}
+За таа цел потребно е да се вметне Octave функција која ќе креира “Band pass
+gaussian filter” во фреквенциски домен. Bandpass гаусовиот филтер во
+фреквенциски домен е дефиниран со равенката:
+\begin{equation}
+H_{(i,j)}=e^{-\frac{d(i,j)^2}{f_h^2}}(1-e^{-\frac{d(i,j)^2}{f_l^2}})
+\end{equation}
+
+Каде што $d(i,j)$ е евклидовото растојанието на даден пиксел од центарот на
+сликата, додека $f_h$ и $f_l$ се праговите на високите и ниските фреквенции кои сакаме
+да ги филтрираме.
+Конверзија на 2D сликата од просторен во фреквенциски домен се прави со
+користење на Фуриева трансформација. Фуриевата трансформација е дефинирана
+како:
+
+         $F(u,v)=\iint \limits_{-\infty}^{\infty} f(x,y)e^{-i2\pi(ux+vy)}dxdy$
+
+
+А во дискретниот домен горната равенка може да биде преведена како
+\begin{equation}
+F(u,v)=\sum_{m=-\infty}^{\infty}\sum_{n=-\infty}^{\infty}f[m,n]\cdot e^{-i2\pi(xmu_0+ynv_0)}
+\end{equation}
+Конверзија на 2D сликата од фреквенциски во просторен домен се прави со
+користење на инверзна Фуриева трансформација. Инверзната Фуриева
+трансформација е дефинирана како:
+
+$f(x,y)=\iint \limits_{-\infty}^{\infty}F(u,v)e^{i2\pi(ux+vy)}dudv$
+
+А во дискретниот домен горната равенка може да биде преведена како
+\begin{equation}
+f(x,y)=\sum_{m=-\infty}^{\infty}\sum_{n=-\infty}^{\infty}F(m,n)\cdot e^{i2\pi(xmu_0+ynv_0)}
+\end{equation}
+\end{document}
