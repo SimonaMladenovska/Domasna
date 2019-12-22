@@ -1,4 +1,4 @@
-
+--delot za latex
 \documentclass[12pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T2A]{fontenc}
@@ -46,39 +46,92 @@ f(x,y)=\sum_{m=-\infty}^{\infty}\sum_{n=-\infty}^{\infty}F(m,n)\cdot e^{i2\pi(xm
 \end{equation}
 \end{document}
 
+--prikaz na slikite
 
---Python za filtriranje na slika
-import cv2
-import numpy as np
-import matplotlib.pyplot as plot
-from PIL import Image, ImageOps
-%matplotlib inline
+%%file create_filter.m
+function filter = create_filter(nx,ny,d0,d1)
 
-slika = cv2.imread('ice.jpg',0)
-plot.imshow(img)
+filter = ones(nx,ny);
 
-f = np.fft.fft2(slika)
-fshift = np.fft.fftshift(f)
-magnitude_spectrum = 20*np.log(np.abs(fshift))
+for i = 0:nx-1,
+            for j = 0:ny-1
+                 dist= sqrt((i-nx/2)^2 + (j-ny/2)^2);
+                 filter(i+1,j+1) = exp(-dist^2/(2*(d1^2))).*(1.0-exp(-dist^2/(2*(d0^2))));
+            end
+end
 
-plot.subplot(121),plot.imshow(slika, cmap = 'gray')
-plot.title('Vnesena fotografija'), plot.xticks([]), plot.yticks([])
-plot.subplot(122),plot.imshow(magnitude_spectrum, cmap = 'gray')
-plot.title('Dobiena'), plot.xticks([]), plot.yticks([])
-plot.show()
+filter(nx/2+1,ny/2+1)=1;
+end
 
---So matlab koga sakame da manipulirame so slika
+%store data
 clear all
-close all
+%read image
+im = double(imread('C:/Users/mlade/Desktop/ice.jpg'));
+%size of the image
+[nx ny] = size(im);
+%Transform the image from spatial to frequency domain
+im_fft = fftshift(fft2(im));
+% Create Gaussian bandpass kernels, in frequency domain, for 20 different cut off frequencies and filter the image
+p=1;
+for i = 1:10:21
+q=1;
+    for j = 1:10:21
+        %Create the bandpass kernel
+        tmp1 = create_filter(nx,ny,i,j);
+        %Filter the image with the bandpass kernel and transform it back to spatial domain
+        tmp = (abs(ifft2(ifftshift(tmp1.*im_fft))));
+        %Save the filtered image (in spatial domain) and kernel (in frequency domain) for visualization 
+        filtered_image(p,q,:) = tmp(:);
+        filter_kernel(p,q,:) = tmp1(:);
+        q=q+1;
+    end
+    
+    p=p+1;
+end
+imshow(tmp)
+imshow(tmp2)
 
-a=imread('C:\Users\mlade\Desktop\ice.jpg');
-whos a
-g=fspecial('gaussian',960,10);
-max(g(:))
-g1=mat2gray(g);
-max(g1(:))
-af=fftshift(fft2(a));
-ag1=af.*g1;
-fftshow(ag1)
+import scipy.io as sio
+from matplotlib import pyplot as plt
+import numpy as np
 
---Delot za Teorija go pisuvav vo Latex a probav da gi resavam posebno vo python i vo matlab poradi toa sto imav problem so matlab kernelot.
+filtered_image = sio.loadmat('filtered_image.mat')
+filtered_kernel = sio.loadmat('filter_kernel.mat')
+fill_images = filtered_image['filtered_image']
+
+import dash
+import dash_html_components as html
+import dash_core_components as dcc
+import base64
+ 
+ 
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+ 
+ 
+img_filename = 'C:/Users/mlade/Desktop/ice.jpg'
+encoded_image = base64.b64encode(open(img_filename, 'rb').read())
+ 
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app.layout = html.Div([
+    html.Div("Frequency cutoffs:"),
+    dcc.RangeSlider(
+        id='slider_id',
+        min=0,
+        max=10,
+        step=0.5,
+        value=[0,0]
+    ),
+    html.Div(id='output-container-range-slider'),
+    html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()))
+])
+ 
+ 
+@app.callback(
+    dash.dependencies.Output('output-container-range-slider', 'children'),
+    [dash.dependencies.Input('slider_id', 'value')])
+def update_output(value):
+    return 'You have selected this value"{}"'.format(value)
+ 
+ 
+if __name__ == '__main__':
+    app.run_server(port=8320,debug=False)
