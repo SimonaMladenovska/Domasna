@@ -50,16 +50,13 @@ f(x,y)=\sum_{m=-\infty}^{\infty}\sum_{n=-\infty}^{\infty}F(m,n)\cdot e^{i2\pi(xm
 
 %%file create_filter.m
 function filter = create_filter(nx,ny,d0,d1)
-
 filter = ones(nx,ny);
-
 for i = 0:nx-1,
             for j = 0:ny-1
                  dist= sqrt((i-nx/2)^2 + (j-ny/2)^2);
                  filter(i+1,j+1) = exp(-dist^2/(2*(d1^2))).*(1.0-exp(-dist^2/(2*(d0^2))));
             end
 end
-
 filter(nx/2+1,ny/2+1)=1;
 end
 
@@ -90,29 +87,72 @@ q=1;
 end
 save filtered_image
 save filter_kernel
-imshow(tmp)
-imshow(tmp1)
+imshow(tmp) %to see the final result of the picture tmp
+imshow(tmp1) %to see the final result of the picture tmp1
 
-%matplotlib nbagg
-
+#libraries that we will use in python
 import ipywidgets as widgets
 from IPython.display import display
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.image as mpimg
 import scipy.io as sio
+import plotly.graph_objects as go
+from chart_studio.plotly import plot, iplot as py
+import cv2
+%matplotlib inline
 
-value = widgets.IntRangeSlider(
+#saving the variables
+filtered_kernel = sio.loadmat('filter_kernel.mat')
+f_kernels = filtered_kernel['filter_kernel']
+filtered_image = sio.loadmat('filtered_image.mat')
+f_images = filtered_image['filtered_image']
+
+#the 2 range slider
+value=widgets.IntRangeSlider(
     value=[0, 10],
     min=0,
     max=10,
-    step=1,,
+    step=1,
     disabled=False,
     continuous_update=False,
     orientation='horizontal',
-    readout=True,
     readout_format='d',
-    layout={'width': '100%'}
+    layout={'width': '100%', 'height':'100%'}
 )
 
+def displayimage(first, second):
+    f_images = np.rot90((f_images[first][second][0:].reshape(402,566)), -1)
+    return f_images;
+    
+
+def displaykernel(first, second):
+    f_kernels = np.rot90((f_kernels[first][second][0:].reshape(402,566)), -1)
+    return f_kernels;
+
+def upgradep(value):
+    image = displayimage(value[0], value[1])
+    kernel = displaykernel(value[0], value[1])
+    
+def display(value):
+    plot_image = np.concatenate((cv2.flip(upgradep.image, 1), cv2.flip(upgradep.kernel, 1)))
+    plt.figure(figsize=(20,30))
+    trace = go.Heatmap(z=z, 
+                   colorscale="gray")
+{"data": [trace]}
+fig = go.Figure(data=go.Data([trace]))
+fig['layout'].update(
+    title="Annotated Heatmap",
+    xaxis=go.XAxis(ticks='', side='top'),
+    yaxis=go.YAxis(ticks='', ticksuffix='  '), 
+    width=402,
+    height=566,
+    autosize=False
+)
+print py.plot(fig, filename='Stack Overflow 31756636', auto_open=False)
+    plt.axis('off')
+    plt.show()
+    
+w=widgets.interactive(upgradep, value=value)
+w
 
